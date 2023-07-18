@@ -40,6 +40,7 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/os/os.h"
+#include "servers/physics_3d/godot_shape_3d.h"
 
 #define FLUSH_QUERY_CHECK(m_object) \
 	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
@@ -82,6 +83,12 @@ RID GodotPhysicsServer3D::cylinder_shape_create() {
 }
 RID GodotPhysicsServer3D::convex_polygon_shape_create() {
 	GodotShape3D *shape = memnew(GodotConvexPolygonShape3D);
+	RID rid = shape_owner.make_rid(shape);
+	shape->set_self(rid);
+	return rid;
+}
+RID GodotPhysicsServer3D::chunk_shape_create() {
+	GodotShape3D *shape = memnew(GodotChunkShape3D);
 	RID rid = shape_owner.make_rid(shape);
 	shape->set_self(rid);
 	return rid;

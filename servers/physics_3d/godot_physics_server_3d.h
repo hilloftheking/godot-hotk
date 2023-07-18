@@ -86,6 +86,7 @@ public:
 	virtual RID capsule_shape_create() override;
 	virtual RID cylinder_shape_create() override;
 	virtual RID convex_polygon_shape_create() override;
+	virtual RID chunk_shape_create() override;
 	virtual RID concave_polygon_shape_create() override;
 	virtual RID heightmap_shape_create() override;
 	virtual RID custom_shape_create() override;

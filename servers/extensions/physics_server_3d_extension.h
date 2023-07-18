@@ -214,6 +214,7 @@ public:
 	EXBIND0R(RID, capsule_shape_create)
 	EXBIND0R(RID, cylinder_shape_create)
 	EXBIND0R(RID, convex_polygon_shape_create)
+	EXBINDOR(RID, chunk_shape_create)
 	EXBIND0R(RID, concave_polygon_shape_create)
 	EXBIND0R(RID, heightmap_shape_create)
 	EXBIND0R(RID, custom_shape_create)

@@ -669,6 +669,8 @@ RID PhysicsServer3D::shape_create(ShapeType p_shape) {
 			return cylinder_shape_create();
 		case SHAPE_CONVEX_POLYGON:
 			return convex_polygon_shape_create();
+		case SHAPE_CHUNK:
+			return chunk_shape_create();
 		case SHAPE_CONCAVE_POLYGON:
 			return concave_polygon_shape_create();
 		case SHAPE_HEIGHTMAP:
@@ -690,6 +692,7 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("capsule_shape_create"), &PhysicsServer3D::capsule_shape_create);
 	ClassDB::bind_method(D_METHOD("cylinder_shape_create"), &PhysicsServer3D::cylinder_shape_create);
 	ClassDB::bind_method(D_METHOD("convex_polygon_shape_create"), &PhysicsServer3D::convex_polygon_shape_create);
+	ClassDB::bind_method(D_METHOD("chunk_shape_create"), &PhysicsServer3D::chunk_shape_create);
 	ClassDB::bind_method(D_METHOD("concave_polygon_shape_create"), &PhysicsServer3D::concave_polygon_shape_create);
 	ClassDB::bind_method(D_METHOD("heightmap_shape_create"), &PhysicsServer3D::heightmap_shape_create);
 	ClassDB::bind_method(D_METHOD("custom_shape_create"), &PhysicsServer3D::custom_shape_create);

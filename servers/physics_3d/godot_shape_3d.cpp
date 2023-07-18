@@ -30,10 +30,12 @@
 
 #include "godot_shape_3d.h"
 
+#include "core/error/error_macros.h"
 #include "core/io/image.h"
 #include "core/math/convex_hull.h"
 #include "core/math/geometry_3d.h"
 #include "core/templates/sort_array.h"
+#include <corecrt_math.h>
 
 // GodotHeightMapShape3D is based on Bullet btHeightfieldTerrainShape.
 
@@ -1165,6 +1167,96 @@ Variant GodotConvexPolygonShape3D::get_data() const {
 }
 
 GodotConvexPolygonShape3D::GodotConvexPolygonShape3D() {
+}
+
+/********** CHUNK *************/
+
+void GodotChunkShape3D::project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const {
+	WARN_PRINT_ONCE(__func__);
+}
+
+Vector3 GodotChunkShape3D::get_closest_point_to(const Vector3 &p_point) const {
+	WARN_PRINT_ONCE(__func__);
+	return Vector3();
+}
+
+bool GodotChunkShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
+	// TODO: Maybe do this?
+	WARN_PRINT_ONCE(__func__);
+	return false;
+}
+
+bool GodotChunkShape3D::intersect_point(const Vector3 &p_point) const {
+	// I don't think this is needed?
+	WARN_PRINT_ONCE(__func__);
+	return false;
+}
+
+Vector3 GodotChunkShape3D::get_moment_of_inertia(real_t p_mass) const {
+	WARN_PRINT_ONCE(__func__);
+	return Vector3();
+}
+
+void GodotChunkShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata, bool p_invert_backface_collision) const {
+	Vector3i start;
+	Vector3i end;
+	for (int i = 0; i < 3; i++) {
+		start[i] = p_local_aabb.position[i] - 0.5;
+		if (start[i] < 0) {
+			start[i] = 0;
+		} else if (start[i] >= dim_size) {
+			start[i] = dim_size - 1;
+		}
+
+		end[i] = p_local_aabb.size[i] + 0.5;
+		if (end[i] < 0) {
+			end[i] = 0;
+		} else if (end[i] >= dim_size) {
+			end[i] = dim_size - 1;
+		}
+		end[i] += start[i];
+	}
+
+	GodotBoxShape3D box;
+	box.set_data(Vector3(0.5, 0.5, 0.5));
+
+	for (int x = start.x; x < end.x; x++) {
+		for (int y = start.y; y < end.y; y++) {
+			for (int z = start.z; z < end.z; z++) {
+				if (!blocks[x * dim_size * dim_size + y * dim_size + z]) {
+					continue;
+				}
+
+				box.aabb.position = Vector3(x + 0.5, y + 0.5, z + 0.5);
+				if (p_callback(p_userdata, &box)) {
+					return;
+				}
+			}
+		}
+	}
+}
+
+void GodotChunkShape3D::set_data(const Variant &p_data) {
+	Dictionary d = p_data;
+	ERR_FAIL_COND(!d.has("blocks"));
+	ERR_FAIL_COND(!d.has("size"));
+
+	blocks = d["blocks"];
+	dim_size = d["size"];
+
+	ERR_FAIL_COND(blocks.size() != dim_size * dim_size * dim_size);
+}
+
+Variant GodotChunkShape3D::get_data() const {
+	Dictionary d;
+	d["blocks"] = blocks;
+	d["size"] = dim_size;
+
+	return d;
+}
+
+GodotChunkShape3D::GodotChunkShape3D() {
+	dim_size = 0;
 }
 
 /********** FACE POLYGON *************/

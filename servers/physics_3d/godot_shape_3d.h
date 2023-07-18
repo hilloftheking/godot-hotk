@@ -47,7 +47,6 @@ public:
 
 class GodotShape3D {
 	RID self;
-	AABB aabb;
 	bool configured = false;
 	real_t custom_bias = 0.0;
 
@@ -57,6 +56,9 @@ protected:
 	void configure(const AABB &p_aabb);
 
 public:
+	// I moved this so that I don't have to make a wrapper around BoxShape
+	AABB aabb;
+
 	enum FeatureType {
 		FEATURE_POINT,
 		FEATURE_EDGE,
@@ -300,6 +302,27 @@ public:
 	virtual Variant get_data() const override;
 
 	GodotConvexPolygonShape3D();
+};
+
+struct GodotChunkShape3D : public GodotConcaveShape3D {
+	PackedByteArray blocks;
+	int dim_size;
+
+public:
+	virtual PhysicsServer3D::ShapeType get_type() const override { return PhysicsServer3D::SHAPE_CHUNK; }
+
+	virtual void project_range(const Vector3 &p_normal, const Transform3D &p_transform, real_t &r_min, real_t &r_max) const override;
+	virtual Vector3 get_closest_point_to(const Vector3 &p_point) const override;
+	virtual bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const override;
+	virtual bool intersect_point(const Vector3 &p_point) const override;
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const override;
+
+	virtual void cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata, bool p_invert_backface_collision) const override;
+
+	virtual void set_data(const Variant &p_data) override;
+	virtual Variant get_data() const override;
+
+	GodotChunkShape3D();
 };
 
 struct _Volume_BVH;

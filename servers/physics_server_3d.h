@@ -249,6 +249,7 @@ public:
 		SHAPE_CAPSULE, ///< dict( float:"radius", float:"height"):capsule
 		SHAPE_CYLINDER, ///< dict( float:"radius", float:"height"):cylinder
 		SHAPE_CONVEX_POLYGON, ///< array of planes:"planes"
+		SHAPE_CHUNK, ///< dict ( byte array:"blocks", int:"size"
 		SHAPE_CONCAVE_POLYGON, ///< vector3 array:"triangles" , or Dictionary with "indices" (int array) and "triangles" (Vector3 array)
 		SHAPE_HEIGHTMAP, ///< dict( int:"width", int:"depth",float:"cell_size", float_array:"heights"
 		SHAPE_SOFT_BODY, ///< Used internally, can't be created from the physics server.
@@ -264,6 +265,7 @@ public:
 	virtual RID capsule_shape_create() = 0;
 	virtual RID cylinder_shape_create() = 0;
 	virtual RID convex_polygon_shape_create() = 0;
+	virtual RID chunk_shape_create() = 0;
 	virtual RID concave_polygon_shape_create() = 0;
 	virtual RID heightmap_shape_create() = 0;
 	virtual RID custom_shape_create() = 0;
