@@ -35,7 +35,7 @@
 #include "core/math/convex_hull.h"
 #include "core/math/geometry_3d.h"
 #include "core/templates/sort_array.h"
-#include <corecrt_math.h>
+#include "servers/physics_3d/godot_shape_3d.h"
 
 // GodotHeightMapShape3D is based on Bullet btHeightfieldTerrainShape.
 
@@ -1181,15 +1181,66 @@ Vector3 GodotChunkShape3D::get_closest_point_to(const Vector3 &p_point) const {
 }
 
 bool GodotChunkShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
-	// TODO: Maybe do this?
-	WARN_PRINT_ONCE(__func__);
+	Vector3 d = p_end - p_begin;
+	real_t step;
+	if (abs(d.x) >= abs(d.y)) {
+		if (abs(d.x) >= abs(d.z)) {
+			step = abs(d.x);
+		} else {
+			step = abs(d.z);
+		}
+	} else {
+		if (abs(d.y) >= abs(d.z)) {
+			step = abs(d.y);
+		} else {
+			step = abs(d.z);
+		}
+	}
+	d /= step;
+
+	GodotBoxShape3D box;
+	Vector3 half(0.5, 0.5, 0.5);
+	box.set_data(half);
+
+	Vector3 p = p_begin;
+	for (int i = 0; i <= step; i++) {
+		Vector3i v = p;
+		p += d;
+
+		bool not_inside = false;
+		for (int i = 0; i < 3; i++) {
+			if (v[i] < 0 || v[i] >= dim_size) {
+				not_inside = true;
+				break;
+			}
+		}
+		if (not_inside) {
+			continue;
+		}
+
+		if (blocks[v.x * dim_size * dim_size + v.y * dim_size + v.z] != 0) {
+			// Transform the segment to be in the box's space
+			Vector3 box_begin = p_begin - v - half;
+			Vector3 box_end = p_end - v - half;
+			if (box.intersect_segment(box_begin, box_end, r_result, r_normal, p_hit_back_faces)) {
+				r_result = r_result + v + half;
+				return true;
+			}
+		}
+	}
+
 	return false;
 }
 
 bool GodotChunkShape3D::intersect_point(const Vector3 &p_point) const {
-	// I don't think this is needed?
-	WARN_PRINT_ONCE(__func__);
-	return false;
+	Vector3i vi = p_point;
+	for (int i = 0; i < 3; i++) {
+		if (vi[i] < 0 || vi[i] >= dim_size) {
+			return false;
+		}
+	}
+
+	return blocks[vi.x * dim_size * dim_size + vi.y * dim_size + vi.z] != 0;
 }
 
 Vector3 GodotChunkShape3D::get_moment_of_inertia(real_t p_mass) const {
@@ -1198,27 +1249,35 @@ Vector3 GodotChunkShape3D::get_moment_of_inertia(real_t p_mass) const {
 }
 
 void GodotChunkShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata, bool p_invert_backface_collision) const {
+	// Each block from [start, end) is checked
 	Vector3i start;
 	Vector3i end;
 	for (int i = 0; i < 3; i++) {
-		start[i] = p_local_aabb.position[i] - 0.5;
+		start[i] = p_local_aabb.position[i];
 		if (start[i] < 0) {
 			start[i] = 0;
 		} else if (start[i] >= dim_size) {
-			start[i] = dim_size - 1;
+			start[i] = dim_size;
 		}
 
-		end[i] = p_local_aabb.size[i] + 0.5;
+		// Add one so that it gets rounded up
+		end[i] = p_local_aabb.position[i] + p_local_aabb.size[i] + 1.0;
 		if (end[i] < 0) {
 			end[i] = 0;
 		} else if (end[i] >= dim_size) {
-			end[i] = dim_size - 1;
+			end[i] = dim_size;
 		}
-		end[i] += start[i];
 	}
 
+	// Use existing collision solver for BoxShape
 	GodotBoxShape3D box;
-	box.set_data(Vector3(0.5, 0.5, 0.5));
+	Vector3 half(0.5, 0.5, 0.5);
+	box.set_data(half);
+
+	// Steal transform_b (chunk transform) from solve_concave
+	// The box collision solver ignores its AABB so this has to be changed instead
+	Transform3D *hacky_transform = *((Transform3D **)p_userdata + 2);
+	Vector3 chunk_origin = hacky_transform->origin;
 
 	for (int x = start.x; x < end.x; x++) {
 		for (int y = start.y; y < end.y; y++) {
@@ -1227,7 +1286,8 @@ void GodotChunkShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback,
 					continue;
 				}
 
-				box.aabb.position = Vector3(x + 0.5, y + 0.5, z + 0.5);
+				// Add half because the AABB of the box is positioned at -half_extents
+				hacky_transform->origin = chunk_origin + Vector3(x, y, z) + half;
 				if (p_callback(p_userdata, &box)) {
 					return;
 				}
@@ -1243,6 +1303,8 @@ void GodotChunkShape3D::set_data(const Variant &p_data) {
 
 	blocks = d["blocks"];
 	dim_size = d["size"];
+
+	configure(AABB(Vector3(), Vector3(dim_size, dim_size, dim_size)));
 
 	ERR_FAIL_COND(blocks.size() != dim_size * dim_size * dim_size);
 }

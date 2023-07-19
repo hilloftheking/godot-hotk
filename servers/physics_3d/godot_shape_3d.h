@@ -47,6 +47,7 @@ public:
 
 class GodotShape3D {
 	RID self;
+	AABB aabb;
 	bool configured = false;
 	real_t custom_bias = 0.0;
 
@@ -56,9 +57,6 @@ protected:
 	void configure(const AABB &p_aabb);
 
 public:
-	// I moved this so that I don't have to make a wrapper around BoxShape
-	AABB aabb;
-
 	enum FeatureType {
 		FEATURE_POINT,
 		FEATURE_EDGE,
