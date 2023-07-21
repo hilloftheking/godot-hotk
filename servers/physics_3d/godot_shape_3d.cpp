@@ -1196,6 +1196,9 @@ bool GodotChunkShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 
 			step = abs(d.z);
 		}
 	}
+	if (step == 0.0) {
+		return false;
+	}
 	d /= step;
 
 	GodotBoxShape3D box;
@@ -1220,8 +1223,8 @@ bool GodotChunkShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 
 
 		if (blocks[v.x * dim_size * dim_size + v.y * dim_size + v.z] != 0) {
 			// Transform the segment to be in the box's space
-			Vector3 box_begin = p_begin - v - half;
-			Vector3 box_end = p_end - v - half;
+			Vector3 box_begin = p_begin - Vector3(v) - half;
+			Vector3 box_end = p_end - Vector3(v) - half;
 			if (box.intersect_segment(box_begin, box_end, r_result, r_normal, p_hit_back_faces)) {
 				r_result = r_result + v + half;
 				return true;
@@ -1257,14 +1260,14 @@ void GodotChunkShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback,
 		if (start[i] < 0) {
 			start[i] = 0;
 		} else if (start[i] >= dim_size) {
-			start[i] = dim_size;
+			start[i] = dim_size - 1;
 		}
 
 		// Add one so that it gets rounded up
 		end[i] = p_local_aabb.position[i] + p_local_aabb.size[i] + 1.0;
-		if (end[i] < 0) {
-			end[i] = 0;
-		} else if (end[i] >= dim_size) {
+		if (end[i] < 1) {
+			end[i] = 1;
+		} else if (end[i] > dim_size) {
 			end[i] = dim_size;
 		}
 	}
