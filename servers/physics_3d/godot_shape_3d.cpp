@@ -1182,54 +1182,82 @@ Vector3 GodotChunkShape3D::get_closest_point_to(const Vector3 &p_point) const {
 
 bool GodotChunkShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
 	Vector3 d = p_end - p_begin;
-	real_t step;
-	if (abs(d.x) >= abs(d.y)) {
-		if (abs(d.x) >= abs(d.z)) {
-			step = abs(d.x);
+	Vector3 dnorm = d.normalized();
+	real_t t = 0.0;
+	Vector3i ind;
+	Vector3i step;
+	Vector3 delta;
+	Vector3 dist;
+	Vector3 tmax;
+
+	for (int i = 0; i < 3; i++) {
+		ind[i] = Math::floor(p_begin[i]);
+		if (d[i] >= 0.0) {
+			step[i] = 1;
+			dist[i] = (real_t)ind[i] + 1.0 - p_begin[i];
 		} else {
-			step = abs(d.z);
+			step[i] = -1;
+			dist[i] = p_begin[i] - (real_t)ind[i];
 		}
-	} else {
-		if (abs(d.y) >= abs(d.z)) {
-			step = abs(d.y);
+
+		if (d[i]) {
+			delta[i] = Math::abs(1.0 / dnorm[i]);
+			tmax[i] = delta[i] * dist[i];
 		} else {
-			step = abs(d.z);
+#if REAL_T_IS_DOUBLE
+			delta[i] = DBL_MAX;
+			tmax[i] = DBL_MAX;
+#else
+			delta[i] = FLT_MAX;
+			tmax[i] = FLT_MAX;
+#endif
 		}
 	}
-	if (step == 0.0) {
-		return false;
-	}
-	d /= step;
 
 	GodotBoxShape3D box;
 	Vector3 half(0.5, 0.5, 0.5);
 	box.set_data(half);
 
-	Vector3 p = p_begin;
-	for (int i = 0; i <= step; i++) {
-		Vector3i v = p;
-		p += d;
-
-		bool not_inside = false;
+	real_t len = d.length();
+	while (t <= len) {
+		bool inside = true;
 		for (int i = 0; i < 3; i++) {
-			if (v[i] < 0 || v[i] >= dim_size) {
-				not_inside = true;
+			if (ind[i] < 0 || ind[i] >= dim_size) {
+				inside = false;
 				break;
 			}
 		}
-		if (not_inside) {
-			continue;
-		}
-
-		if (blocks[v.x * dim_size * dim_size + v.y * dim_size + v.z] != 0) {
-			// Transform the segment to be in the box's space
-			Vector3 box_begin = p_begin - Vector3(v) - half;
-			Vector3 box_end = p_end - Vector3(v) - half;
-			if (box.intersect_segment(box_begin, box_end, r_result, r_normal, p_hit_back_faces)) {
-				r_result = r_result + v + half;
-				return true;
+		if (inside) {
+			if (blocks[ind.x * dim_size * dim_size + ind.y * dim_size + ind.z] != 0) {
+				// Transform the segment to be in the box's space
+				Vector3 box_begin = p_begin - Vector3(ind) - half;
+				Vector3 box_end = p_end - Vector3(ind) - half;
+				if (box.intersect_segment(box_begin, box_end, r_result, r_normal, p_hit_back_faces)) {
+					r_result = r_result + Vector3(ind) + half;
+					return true;
+				}
 			}
 		}
+
+		// Figure out which direction to go
+		int i = 0;
+		if (tmax.x < tmax.y) {
+			if (tmax.x < tmax.z) {
+				i = 0;
+			} else {
+				i = 2;
+			}
+		} else {
+			if (tmax.y < tmax.z) {
+				i = 1;
+			} else {
+				i = 2;
+			}
+		}
+
+		ind[i] += step[i];
+		t = tmax[i];
+		tmax[i] += delta[i];
 	}
 
 	return false;
