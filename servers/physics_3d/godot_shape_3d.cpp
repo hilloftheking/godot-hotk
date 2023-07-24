@@ -1181,6 +1181,11 @@ Vector3 GodotChunkShape3D::get_closest_point_to(const Vector3 &p_point) const {
 }
 
 bool GodotChunkShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
+	if (!dim_size) {
+		// Chunk hasn't been configured yet
+		return false;
+	}
+
 	Vector3 d = p_end - p_begin;
 	Vector3 dnorm = d.normalized();
 	real_t t = 0.0;
@@ -1280,6 +1285,11 @@ Vector3 GodotChunkShape3D::get_moment_of_inertia(real_t p_mass) const {
 }
 
 void GodotChunkShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata, bool p_invert_backface_collision) const {
+	if (!dim_size) {
+		// Chunk hasn't been configured yet
+		return;
+	}
+
 	// Each block from [start, end) is checked
 	Vector3i start;
 	Vector3i end;
