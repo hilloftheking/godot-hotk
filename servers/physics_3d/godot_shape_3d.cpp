@@ -1219,9 +1219,9 @@ bool GodotChunkShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 
 		}
 	}
 
-	GodotBoxShape3D box;
-	Vector3 half(0.5, 0.5, 0.5);
-	box.set_data(half);
+	// AABB::intersects_segment is used
+	AABB box;
+	box.size = Vector3(1.0, 1.0, 1.0);
 
 	real_t len = d.length();
 	while (t <= len) {
@@ -1234,11 +1234,8 @@ bool GodotChunkShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 
 		}
 		if (inside) {
 			if (blocks[ind.x * dim_size * dim_size + ind.y * dim_size + ind.z] != 0) {
-				// Transform the segment to be in the box's space
-				Vector3 box_begin = p_begin - Vector3(ind) - half;
-				Vector3 box_end = p_end - Vector3(ind) - half;
-				if (box.intersect_segment(box_begin, box_end, r_result, r_normal, p_hit_back_faces)) {
-					r_result = r_result + Vector3(ind) + half;
+				box.position = ind;
+				if (box.intersects_segment(p_begin, p_end, &r_result, &r_normal)) {
 					return true;
 				}
 			}
