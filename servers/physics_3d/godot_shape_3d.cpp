@@ -35,6 +35,7 @@
 #include "core/math/convex_hull.h"
 #include "core/math/geometry_3d.h"
 #include "core/templates/sort_array.h"
+#include "core/variant/variant.h"
 #include "servers/physics_3d/godot_shape_3d.h"
 
 // GodotHeightMapShape3D is based on Bullet btHeightfieldTerrainShape.
@@ -1349,7 +1350,7 @@ void GodotChunkShape3D::set_data(const Variant &p_data) {
 
 Variant GodotChunkShape3D::get_data() const {
 	Dictionary d;
-	d["blocks"] = blocks;
+	d["blocks"] = PackedByteArray(blocks);
 	d["size"] = dim_size;
 
 	return d;

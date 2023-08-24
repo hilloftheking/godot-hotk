@@ -303,7 +303,7 @@ public:
 };
 
 struct GodotChunkShape3D : public GodotConcaveShape3D {
-	PackedByteArray blocks;
+	LocalVector<uint8_t> blocks;
 	int dim_size;
 
 public:
