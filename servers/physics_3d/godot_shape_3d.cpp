@@ -1345,7 +1345,7 @@ void GodotChunkShape3D::set_data(const Variant &p_data) {
 
 	configure(AABB(Vector3(), Vector3(dim_size, dim_size, dim_size)));
 
-	ERR_FAIL_COND(blocks.size() != dim_size * dim_size * dim_size);
+	ERR_FAIL_COND(blocks.size() != (unsigned int)(dim_size * dim_size * dim_size));
 }
 
 Variant GodotChunkShape3D::get_data() const {
