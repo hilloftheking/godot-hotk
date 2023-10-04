@@ -1314,7 +1314,7 @@ void GodotChunkShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback,
 	box.set_data(half);
 
 	// Steal transform_b (chunk transform) from solve_concave
-	// The box collision solver ignores its AABB so this has to be changed instead
+	// This transform has to be modified for each block so that the solver knows where they are at
 	Transform3D *hacky_transform = *((Transform3D **)p_userdata + 2);
 	Vector3 chunk_origin = hacky_transform->origin;
 
@@ -1328,11 +1328,14 @@ void GodotChunkShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback,
 				// Add half because the AABB of the box is positioned at -half_extents
 				hacky_transform->origin = chunk_origin + Vector3(x, y, z) + half;
 				if (p_callback(p_userdata, &box)) {
+					hacky_transform->origin = chunk_origin;
 					return;
 				}
 			}
 		}
 	}
+
+	hacky_transform->origin = chunk_origin;
 }
 
 void GodotChunkShape3D::set_data(const Variant &p_data) {
