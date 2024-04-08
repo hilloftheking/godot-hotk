@@ -2298,13 +2298,6 @@ void main() {
 	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 #endif // !FOG_DISABLED
 
-	// Tonemap before writing as we are writing to an sRGB framebuffer
-	frag_color.rgb *= exposure;
-#ifdef APPLY_TONEMAPPING
-	frag_color.rgb = apply_tonemapping(frag_color.rgb, white);
-#endif
-	frag_color.rgb = linear_to_srgb(frag_color.rgb);
-
 #else // !BASE_PASS
 	frag_color = vec4(0.0, 0.0, 0.0, alpha);
 #endif // !BASE_PASS
@@ -2566,18 +2559,27 @@ void main() {
 	additive_light_color *= (1.0 - fog.a);
 #endif // !FOG_DISABLED
 
-	// Tonemap before writing as we are writing to an sRGB framebuffer
-	additive_light_color *= exposure;
-#ifdef APPLY_TONEMAPPING
-	additive_light_color = apply_tonemapping(additive_light_color, white);
-#endif
-	additive_light_color = linear_to_srgb(additive_light_color);
-
 	frag_color.rgb += additive_light_color;
 #endif // USE_ADDITIVE_LIGHTING
 	frag_color.rgb *= scene_data.luminance_multiplier;
 
 #endif // !RENDER_MATERIAL
+
+	frag_color.rgb *= exposure;
+
+	// Tonemap before writing as we are writing to an sRGB framebuffer
+#ifdef APPLY_TONEMAPPING
+	frag_color.rgb = apply_tonemapping(frag_color.rgb, white);
+#endif
+	frag_color.rgb = linear_to_srgb(frag_color.rgb);
+
+#ifdef USE_BCS
+	frag_color.rgb = apply_bcs(frag_color.rgb, bcs);
+#endif
+
+#ifdef USE_COLOR_CORRECTION
+	frag_color.rgb = apply_color_correction(frag_color.rgb, color_correction);
+#endif
 #endif // !MODE_RENDER_DEPTH
 
 #ifdef PREMUL_ALPHA_USED
