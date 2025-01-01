@@ -5347,8 +5347,11 @@ bool ShaderLanguage::_is_operator_assign(Operator p_op) const {
 
 bool ShaderLanguage::_validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message) {
 	if (current_function != "vertex" && current_function != "fragment") {
-		*r_message = vformat(RTR("Varying may not be assigned in the '%s' function."), current_function);
-		return false;
+		// Allow assigning in the light() function if the varying has been assigned in the fragment() function
+		if (!(current_function == "light" && p_varying.stage == ShaderNode::Varying::STAGE_FRAGMENT)) {
+			*r_message = vformat(RTR("Varying may not be assigned in the '%s' function."), current_function);
+			return false;
+		}
 	}
 	switch (p_varying.stage) {
 		case ShaderNode::Varying::STAGE_UNKNOWN: // first assign
