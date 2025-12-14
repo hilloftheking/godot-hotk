@@ -243,6 +243,7 @@ public:
 	enum DepthTest {
 		DEPTH_TEST_DEFAULT,
 		DEPTH_TEST_INVERTED,
+		DEPTH_TEST_EQUAL,
 		DEPTH_TEST_MAX
 	};
 

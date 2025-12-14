@@ -3157,7 +3157,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			scene_state.enable_gl_depth_test(shader->depth_test != GLES3::SceneShaderData::DEPTH_TEST_DISABLED);
 		}
 
-		if (shader->depth_test == GLES3::SceneShaderData::DEPTH_TEST_ENABLED_INVERTED) {
+		if (shader->depth_test == GLES3::SceneShaderData::DEPTH_TEST_ENABLED_EQUAL) {
+			scene_state.set_gl_depth_func(GL_EQUAL);
+		} else if (shader->depth_test == GLES3::SceneShaderData::DEPTH_TEST_ENABLED_INVERTED) {
 			scene_state.set_gl_depth_func(GL_LESS);
 		} else {
 			scene_state.set_gl_depth_func(GL_GEQUAL);

@@ -259,6 +259,7 @@ struct SceneShaderData : public ShaderData {
 		DEPTH_TEST_DISABLED,
 		DEPTH_TEST_ENABLED,
 		DEPTH_TEST_ENABLED_INVERTED,
+		DEPTH_TEST_ENABLED_EQUAL,
 	};
 
 	enum StencilCompare {

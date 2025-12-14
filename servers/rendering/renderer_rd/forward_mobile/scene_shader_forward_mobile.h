@@ -158,6 +158,7 @@ public:
 			DEPTH_TEST_DISABLED,
 			DEPTH_TEST_ENABLED,
 			DEPTH_TEST_ENABLED_INVERTED,
+			DEPTH_TEST_ENABLED_EQUAL,
 		};
 
 		enum CullVariant {
@@ -239,6 +240,7 @@ public:
 		int blend_mode = BLEND_MODE_MIX;
 		int depth_test_disabledi = 0;
 		int depth_test_invertedi = 0;
+		int depth_test_equali = 0;
 		int alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 		int cull_mode = RS::CULL_MODE_BACK;
 

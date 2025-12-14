@@ -867,6 +867,9 @@ void BaseMaterial3D::_update_shader() {
 			case DEPTH_TEST_DEFAULT:
 				// depth_test_default is the default behavior, no need to emit it here.
 				break;
+			case DEPTH_TEST_EQUAL:
+				code += ", depth_test_equal";
+				break;
 			case DEPTH_TEST_INVERTED:
 				code += ", depth_test_inverted";
 				break;
@@ -3594,7 +3597,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mode", PROPERTY_HINT_ENUM, "Back,Front,Disabled"), "set_cull_mode", "get_cull_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never"), "set_depth_draw_mode", "get_depth_draw_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "no_depth_test"), "set_flag", "get_flag", FLAG_DISABLE_DEPTH_TEST);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_test", PROPERTY_HINT_ENUM, "Default,Inverted"), "set_depth_test", "get_depth_test");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_test", PROPERTY_HINT_ENUM, "Default,Inverted,Equal"), "set_depth_test", "get_depth_test");
 
 	ADD_GROUP("Shading", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shading_mode", PROPERTY_HINT_ENUM, "Unshaded,Per-Pixel,Per-Vertex"), "set_shading_mode", "get_shading_mode");
@@ -3855,6 +3858,7 @@ void BaseMaterial3D::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(DEPTH_TEST_DEFAULT);
 	BIND_ENUM_CONSTANT(DEPTH_TEST_INVERTED);
+	BIND_ENUM_CONSTANT(DEPTH_TEST_EQUAL);
 
 	BIND_ENUM_CONSTANT(CULL_BACK);
 	BIND_ENUM_CONSTANT(CULL_FRONT);
